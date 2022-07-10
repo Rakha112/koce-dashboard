@@ -6,6 +6,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 import BottomTabNavigation from './src/components/BottomTabNavigation';
 import ToastComponent from './src/components/ToastComponent';
+import ProdukPage from './src/screen/ProdukPage';
 const App = () => {
   const Stack = createStackNavigator();
   return (
@@ -23,6 +24,7 @@ const App = () => {
             ...TransitionPresets.SlideFromRightIOS,
           }}>
           <Stack.Screen name="Home" component={BottomTabNavigation} />
+          <Stack.Screen name="Produk" component={ProdukPage} />
         </Stack.Navigator>
       </NavigationContainer>
       <ToastComponent />

@@ -21,9 +21,9 @@ import DeleteIcon from '../assets/svg/DeleteIcon.svg';
 import Toast from 'react-native-toast-message';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
-import Switch from '../components/Switch';
-
+import {useNavigation} from '@react-navigation/native';
 const KategoriMenuPage = () => {
+  const navigation = useNavigation();
   const [kategori, setKategori] = useState([]);
   const [tambah, setTambah] = useState('');
   const [update, setUpdate] = useState(true);
@@ -87,7 +87,7 @@ const KategoriMenuPage = () => {
       </Animated.View>
     );
   };
-
+  // flatlist render componenets
   const renderItem = ({item}) => {
     return (
       <Swipeable
@@ -96,8 +96,9 @@ const KategoriMenuPage = () => {
         }>
         <TouchableOpacity
           style={styles.componentContainer}
-          onLongPress={() => {
-            console.log('Long Press');
+          onPress={() => {
+            console.log(item.NamaKategori);
+            navigation.navigate('Produk', {kategori: item.NamaKategori});
           }}>
           <Text style={{fontFamily: 'Inter-Regular', fontSize: 14}}>
             {item.NamaKategori}
@@ -119,157 +120,86 @@ const KategoriMenuPage = () => {
     [],
   );
 
-  if (kategori.length === 0) {
-    return (
-      <SafeAreaView style={styles.container} edges={['left', 'right', 'top']}>
-        <View style={styles.header}>
-          <Text style={styles.texHeaderStyle}>Kategori Menu</Text>
-          <View style={styles.iconPlusStyle}>
-            <TouchableWithoutFeedback
-              onPress={() => {
-                bottomSheetRef.current.expand();
-              }}>
-              <TambahIcon width={30} height={30} fill={'black'} />
-            </TouchableWithoutFeedback>
-          </View>
+  return (
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'top']}>
+      <View style={styles.header}>
+        <Text style={styles.texHeaderStyle}>Kategori Menu</Text>
+        <View style={styles.iconPlusStyle}>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              bottomSheetRef.current.expand();
+            }}>
+            <TambahIcon width={30} height={30} fill={'black'} />
+          </TouchableWithoutFeedback>
         </View>
+      </View>
+      {kategori.length === 0 ? (
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <Text style={{fontFamily: 'Inter-Bold', color: 'black'}}>
             Kategori Kosong
           </Text>
         </View>
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={-1}
-          enablePanDownToClose
-          snapPoints={['90%', '90%']}
-          backdropComponent={renderBackdrop}>
-          <View style={styles.headerBottomSheet}>
-            <Text style={styles.texHeaderStyle}>Tambah Kategori Baru</Text>
-            <TouchableWithoutFeedback
-              style={{marginRight: 10}}
-              onPress={() => {
-                if (tambah !== '') {
-                  axios
-                    .post('http://localhost:3001/kategori/tambah', {
-                      kategori: tambah,
-                    })
-                    .then(() => {
-                      Toast.show({
-                        type: 'sukses',
-                        text1: 'Berhasil Menambah Kategori',
-                        visibilityTime: 2000,
-                      });
-                      bottomSheetRef.current.close();
-                      setUpdate(true);
-                      setTambah('');
-                    })
-                    .catch(err => {
-                      if (err.response.status === 409) {
-                        Toast.show({
-                          type: 'gagal',
-                          text1: 'Kategori Sudah Ada',
-                          visibilityTime: 2000,
-                        });
-                      }
-                    });
-                } else {
-                  Toast.show({
-                    type: 'warning',
-                    text1: 'Form tidak boleh kosong',
-                    visibilityTime: 2000,
-                  });
-                }
-              }}>
-              <DoneIcon width={30} height={30} fill={'black'} />
-            </TouchableWithoutFeedback>
-          </View>
-          <TextInput
-            style={styles.searchStyle}
-            placeholder="Masukkan Nama Kategori"
-            placeholderTextColor={'grey'}
-            onChangeText={e => {
-              setTambah(e);
-            }}
-          />
-        </BottomSheet>
-      </SafeAreaView>
-    );
-  } else {
-    return (
-      <SafeAreaView style={styles.container} edges={['left', 'right', 'top']}>
-        <View style={styles.header}>
-          <Text style={styles.texHeaderStyle}>Kategori Menu</Text>
-          <View style={styles.iconPlusStyle}>
-            <TouchableWithoutFeedback
-              onPress={() => {
-                bottomSheetRef.current.expand();
-              }}>
-              <TambahIcon width={30} height={30} fill={'black'} />
-            </TouchableWithoutFeedback>
-          </View>
-        </View>
+      ) : (
         <FlatList data={kategori} renderItem={renderItem} />
-        <Switch />
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={-1}
-          enablePanDownToClose
-          snapPoints={['90%', '90%']}
-          backdropComponent={renderBackdrop}>
-          <View style={styles.headerBottomSheet}>
-            <Text style={styles.texHeaderStyle}>Tambah Kategori Baru</Text>
-            <TouchableWithoutFeedback
-              style={{marginRight: 10}}
-              onPress={() => {
-                if (tambah !== '') {
-                  axios
-                    .post('http://localhost:3001/kategori/tambah', {
-                      kategori: tambah,
-                    })
-                    .then(() => {
+      )}
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={-1}
+        enablePanDownToClose
+        snapPoints={['90%', '90%']}
+        backdropComponent={renderBackdrop}>
+        <View style={styles.headerBottomSheet}>
+          <Text style={styles.texHeaderStyle}>Tambah Kategori Baru</Text>
+          <TouchableWithoutFeedback
+            style={{marginRight: 10}}
+            onPress={() => {
+              if (tambah !== '') {
+                axios
+                  .post('http://localhost:3001/kategori/tambah', {
+                    kategori: tambah,
+                  })
+                  .then(() => {
+                    Toast.show({
+                      type: 'sukses',
+                      text1: 'Berhasil Menambah Kategori',
+                      visibilityTime: 2000,
+                    });
+                    setTambah('');
+                    setUpdate(true);
+                    bottomSheetRef.current.close();
+                  })
+                  .catch(err => {
+                    if (err.response.status === 409) {
                       Toast.show({
-                        type: 'sukses',
-                        text1: 'Berhasil Menambah Kategori',
+                        type: 'gagal',
+                        text1: 'Kategori Sudah Ada',
                         visibilityTime: 2000,
                       });
-                      setTambah('');
-                      setUpdate(true);
-                      bottomSheetRef.current.close();
-                    })
-                    .catch(err => {
-                      if (err.response.status === 409) {
-                        Toast.show({
-                          type: 'gagal',
-                          text1: 'Kategori Sudah Ada',
-                          visibilityTime: 2000,
-                        });
-                      }
-                    });
-                } else {
-                  Toast.show({
-                    type: 'warning',
-                    text1: 'Form tidak boleh kosong',
-                    visibilityTime: 2000,
+                    }
                   });
-                }
-              }}>
-              <DoneIcon width={30} height={30} fill={'black'} />
-            </TouchableWithoutFeedback>
-          </View>
-          <TextInput
-            value={tambah}
-            style={styles.searchStyle}
-            placeholder="Masukkan Nama Kategori"
-            placeholderTextColor={'grey'}
-            onChangeText={e => {
-              setTambah(e);
-            }}
-          />
-        </BottomSheet>
-      </SafeAreaView>
-    );
-  }
+              } else {
+                Toast.show({
+                  type: 'warning',
+                  text1: 'Form tidak boleh kosong',
+                  visibilityTime: 2000,
+                });
+              }
+            }}>
+            <DoneIcon width={30} height={30} fill={'black'} />
+          </TouchableWithoutFeedback>
+        </View>
+        <TextInput
+          value={tambah}
+          style={styles.searchStyle}
+          placeholder="Masukkan Nama Kategori"
+          placeholderTextColor={'grey'}
+          onChangeText={e => {
+            setTambah(e);
+          }}
+        />
+      </BottomSheet>
+    </SafeAreaView>
+  );
 };
 
 export default KategoriMenuPage;
