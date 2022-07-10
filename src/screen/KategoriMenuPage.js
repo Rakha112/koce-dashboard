@@ -1,48 +1,110 @@
 /* eslint-disable react-native/no-inline-styles */
-import {StyleSheet, Text, FlatList, View, TextInput} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  FlatList,
+  View,
+  TextInput,
+  Animated,
+} from 'react-native';
 import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+} from 'react-native-gesture-handler';
 import axios from 'axios';
-import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import TambahIcon from '../assets/svg/TambahIcon.svg';
 import ArrowIcon from '../assets/svg/ArrowIcon.svg';
 import DoneIcon from '../assets/svg/DoneIcon.svg';
+import DeleteIcon from '../assets/svg/DeleteIcon.svg';
 import Toast from 'react-native-toast-message';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
-const MenuPage = () => {
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+import Switch from '../components/Switch';
+
+const KategoriMenuPage = () => {
   const [kategori, setKategori] = useState([]);
   const [tambah, setTambah] = useState('');
-  const [berhasilTambah, setBerhasilTambah] = useState(false);
+  const [update, setUpdate] = useState(true);
   const bottomSheetRef = useRef(null);
   useEffect(() => {
-    if (berhasilTambah) {
+    if (update) {
+      setUpdate(false);
+    } else {
       axios
         .get('http://localhost:3001/kategori/')
         .then(res => {
-          if (res.data.data.length !== 0) {
-            setKategori(res.data.data);
-          }
+          setKategori(res.data.data);
         })
         .catch(err => {
           console.log({err});
         });
-      setBerhasilTambah(false);
     }
-  }, [berhasilTambah]);
+  }, [update]);
+  // swipe component for delete
+  const renderRightActions = (progress, dragX, props) => {
+    const trans = dragX.interpolate({
+      inputRange: [0, 50, 100, 101],
+      outputRange: [0.6, 0, 0, 1],
+    });
+    return (
+      <Animated.View
+        style={{
+          width: 50,
+          justifyContent: 'center',
+          alignItems: 'center',
+          transform: [{scale: trans}],
+        }}>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            if (kategori.length !== 0) {
+              axios
+                .delete('http://localhost:3001/kategori/delete', {
+                  params: {
+                    kategori: props,
+                  },
+                })
+                .then(() => {
+                  setUpdate(true);
+                  Toast.show({
+                    type: 'sukses',
+                    text1: 'Berhasil Menghapus Kategori',
+                    visibilityTime: 2000,
+                  });
+                })
+                .catch(() => {
+                  Toast.show({
+                    type: 'gagal',
+                    text1: 'Gagal Menghapus Kategori',
+                    visibilityTime: 2000,
+                  });
+                });
+            }
+          }}>
+          <DeleteIcon width={20} height={20} fill={'black'} />
+        </TouchableWithoutFeedback>
+      </Animated.View>
+    );
+  };
 
   const renderItem = ({item}) => {
     return (
-      <TouchableOpacity
-        style={styles.componentContainer}
-        onLongPress={() => {
-          console.log('Long Press');
-        }}>
-        <Text style={{fontFamily: 'Inter-Regular', fontSize: 14}}>
-          {item.NamaKategori}
-        </Text>
-        <ArrowIcon width={14} height={14} fill={'black'} />
-      </TouchableOpacity>
+      <Swipeable
+        renderRightActions={(progress, dragX) =>
+          renderRightActions(progress, dragX, item.NamaKategori)
+        }>
+        <TouchableOpacity
+          style={styles.componentContainer}
+          onLongPress={() => {
+            console.log('Long Press');
+          }}>
+          <Text style={{fontFamily: 'Inter-Regular', fontSize: 14}}>
+            {item.NamaKategori}
+          </Text>
+          <ArrowIcon width={14} height={14} fill={'black'} />
+        </TouchableOpacity>
+      </Swipeable>
     );
   };
 
@@ -72,7 +134,9 @@ const MenuPage = () => {
           </View>
         </View>
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <Text style={{fontFamily: 'Inter-Bold'}}>Kategori Kosong</Text>
+          <Text style={{fontFamily: 'Inter-Bold', color: 'black'}}>
+            Kategori Kosong
+          </Text>
         </View>
         <BottomSheet
           ref={bottomSheetRef}
@@ -97,7 +161,8 @@ const MenuPage = () => {
                         visibilityTime: 2000,
                       });
                       bottomSheetRef.current.close();
-                      setBerhasilTambah(true);
+                      setUpdate(true);
+                      setTambah('');
                     })
                     .catch(err => {
                       if (err.response.status === 409) {
@@ -122,6 +187,7 @@ const MenuPage = () => {
           <TextInput
             style={styles.searchStyle}
             placeholder="Masukkan Nama Kategori"
+            placeholderTextColor={'grey'}
             onChangeText={e => {
               setTambah(e);
             }}
@@ -144,6 +210,7 @@ const MenuPage = () => {
           </View>
         </View>
         <FlatList data={kategori} renderItem={renderItem} />
+        <Switch />
         <BottomSheet
           ref={bottomSheetRef}
           index={-1}
@@ -166,8 +233,9 @@ const MenuPage = () => {
                         text1: 'Berhasil Menambah Kategori',
                         visibilityTime: 2000,
                       });
+                      setTambah('');
+                      setUpdate(true);
                       bottomSheetRef.current.close();
-                      setBerhasilTambah(true);
                     })
                     .catch(err => {
                       if (err.response.status === 409) {
@@ -190,8 +258,10 @@ const MenuPage = () => {
             </TouchableWithoutFeedback>
           </View>
           <TextInput
+            value={tambah}
             style={styles.searchStyle}
             placeholder="Masukkan Nama Kategori"
+            placeholderTextColor={'grey'}
             onChangeText={e => {
               setTambah(e);
             }}
@@ -202,7 +272,7 @@ const MenuPage = () => {
   }
 };
 
-export default MenuPage;
+export default KategoriMenuPage;
 
 const styles = StyleSheet.create({
   container: {
@@ -216,6 +286,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     borderBottomWidth: 0.2,
     borderBottomColor: 'grey',
+    backgroundColor: 'white',
   },
   header: {
     height: 50,
@@ -223,6 +294,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   texHeaderStyle: {
+    color: 'black',
     fontFamily: 'Inter-Bold',
     fontSize: 20,
     flex: 1,
@@ -232,6 +304,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   searchStyle: {
+    color: 'black',
     height: 40,
     marginHorizontal: 10,
     paddingLeft: 15,

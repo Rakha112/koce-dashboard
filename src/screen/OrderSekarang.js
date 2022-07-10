@@ -4,7 +4,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 const OrderSekarang = () => {
   return (
     <SafeAreaView style={styles.container}>
-      <Text>OrderSekarang</Text>
+      <Text style={{color: 'black'}}>OrderSekarang</Text>
     </SafeAreaView>
   );
 };

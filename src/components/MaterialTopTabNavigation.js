@@ -10,11 +10,11 @@ function MaterialTopTabNavigation() {
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: {paddingTop: insets.top, margin: 0},
-        // tabBarLabelStyle: {fontFamily: 'Inter-Regular', textTransform: 'none'},
+        tabBarLabelStyle: {fontFamily: 'Inter-Regular', textTransform: 'none'},
         tabBarPressColor: 'white',
-        // tabBarIndicatorStyle: {backgroundColor: '#FFA901'},
-        // tabBarActiveTintColor: '#FFA901',
-        // tabBarInactiveTintColor: 'black',
+        tabBarIndicatorStyle: {backgroundColor: '#FFA901'},
+        tabBarActiveTintColor: '#FFA901',
+        tabBarInactiveTintColor: 'black',
       }}>
       <Tab.Screen name="Sekarang" component={OrderSekarang} />
       <Tab.Screen name="Selesai" component={OrderSelesai} />
