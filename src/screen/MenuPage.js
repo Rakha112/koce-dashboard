@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, FlatList} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {TouchableOpacity} from 'react-native-gesture-handler';
@@ -13,6 +13,19 @@ const MenuPage = () => {
       }
     });
   }, []);
+
+  const renderItem = ({item}) => {
+    return (
+      <TouchableOpacity
+        style={styles.componentContainer}
+        onLongPress={() => {
+          console.log('Long Press');
+        }}>
+        <Text>{item.NamaKategori}</Text>
+        <Text>{'>'}</Text>
+      </TouchableOpacity>
+    );
+  };
   if (kategori.length === 0) {
     return (
       <SafeAreaView style={styles.containerKosong} edges={['left', 'right']}>
@@ -22,19 +35,7 @@ const MenuPage = () => {
   } else {
     return (
       <SafeAreaView style={styles.container} edges={['left', 'right']}>
-        {kategori.map((item, key) => {
-          return (
-            <TouchableOpacity
-              key={key}
-              style={styles.componentContainer}
-              onLongPress={() => {
-                console.log('Long Press');
-              }}>
-              <Text>{item.NamaKategori}</Text>
-              <Text>{'>'}</Text>
-            </TouchableOpacity>
-          );
-        })}
+        <FlatList data={kategori} renderItem={renderItem} />
       </SafeAreaView>
     );
   }

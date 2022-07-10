@@ -4,7 +4,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 import BottomTabNavigation from './src/components/BottomTabNavigation';
-
+import ToastComponent from './src/components/ToastComponent';
 const App = () => {
   const Stack = createStackNavigator();
   return (
@@ -19,6 +19,7 @@ const App = () => {
           <Stack.Screen name="Home" component={BottomTabNavigation} />
         </Stack.Navigator>
       </NavigationContainer>
+      <ToastComponent />
     </SafeAreaProvider>
   );
 };
