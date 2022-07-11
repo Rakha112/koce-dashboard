@@ -10,11 +10,13 @@ import Animated, {
   withTiming,
   useDerivedValue,
 } from 'react-native-reanimated';
-const Switch = () => {
+import axios from 'axios';
+import Toast from 'react-native-toast-message';
+const Switch = ({status, nama, kategori}) => {
   // value buat animasi switch
-  const switchTranslate = useSharedValue(0);
+  const switchTranslate = useSharedValue(status === 1 ? 21 : 0);
   // state buat aktifasi switch
-  const [aktif, setAktif] = useState(false);
+  const [aktif, setAktif] = useState(status === 1 ? true : false);
   // value buat animasi backgroud
   const progress = useDerivedValue(() => {
     return withTiming(aktif ? 21 : 0);
@@ -56,12 +58,44 @@ const Switch = () => {
     };
   });
 
+  const switchHandle = () => {
+    setAktif(!aktif);
+    if (aktif) {
+      axios
+        .put('http://192.168.181.51:3001/menu/status', {
+          status: 0,
+          nama: nama,
+          kategori: kategori,
+        })
+        .then(res => {
+          Toast.show({
+            type: 'gagal',
+            text1: `${nama} OFF`,
+            visibilityTime: 2000,
+          });
+        });
+    } else {
+      axios
+        .put('http://192.168.181.51:3001/menu/status', {
+          status: 1,
+          nama: nama,
+          kategori: kategori,
+        })
+        .then(res => {
+          Toast.show({
+            type: 'sukses',
+            text1: `${nama} ON`,
+            visibilityTime: 2000,
+          });
+        });
+    }
+  };
+
   return (
     <Animated.View style={[styles.container, backgroundColorStyle]}>
       <TouchableWithoutFeedback
         onPress={() => {
-          setAktif(!aktif);
-          console.log('PRESSSS');
+          switchHandle();
         }}>
         <Animated.View style={[styles.circle, customSpringStyles]} />
       </TouchableWithoutFeedback>

@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^4.3.2",
+    "@react-native-firebase/app": "^15.1.1",
+    "@react-native-firebase/storage": "^15.1.1",
     "@react-native-masked-view/masked-view": "^0.2.6",
     "@react-navigation/bottom-tabs": "^6.3.2",
     "@react-navigation/material-top-tabs": "^6.2.2",
@@ -20,6 +22,7 @@
     "react": "17.0.2",
     "react-native": "0.68.2",
     "react-native-gesture-handler": "^2.5.0",
+    "react-native-image-picker": "^4.8.4",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-pager-view": "^5.4.25",
     "react-native-reanimated": "^2.9.1",

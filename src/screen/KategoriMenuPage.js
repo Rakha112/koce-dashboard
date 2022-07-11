@@ -33,7 +33,7 @@ const KategoriMenuPage = () => {
       setUpdate(false);
     } else {
       axios
-        .get('http://localhost:3001/kategori/')
+        .get('http://192.168.181.51:3001/kategori/')
         .then(res => {
           setKategori(res.data.data);
         })
@@ -60,7 +60,7 @@ const KategoriMenuPage = () => {
           onPress={() => {
             if (kategori.length !== 0) {
               axios
-                .delete('http://localhost:3001/kategori/delete', {
+                .delete('http://192.168.181.51:3001/kategori/delete', {
                   params: {
                     kategori: props,
                   },
@@ -97,10 +97,9 @@ const KategoriMenuPage = () => {
         <TouchableOpacity
           style={styles.componentContainer}
           onPress={() => {
-            console.log(item.NamaKategori);
             navigation.navigate('Produk', {kategori: item.NamaKategori});
           }}>
-          <Text style={{fontFamily: 'Inter-Regular', fontSize: 14}}>
+          <Text style={{fontFamily: 'Inter-Regular', fontSize: 16}}>
             {item.NamaKategori}
           </Text>
           <ArrowIcon width={14} height={14} fill={'black'} />
@@ -155,7 +154,7 @@ const KategoriMenuPage = () => {
             onPress={() => {
               if (tambah !== '') {
                 axios
-                  .post('http://localhost:3001/kategori/tambah', {
+                  .post('http://192.168.181.51:3001/kategori/tambah', {
                     kategori: tambah,
                   })
                   .then(() => {
@@ -214,7 +213,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 20,
-    borderBottomWidth: 0.2,
+    borderBottomWidth: 0.5,
     borderBottomColor: 'grey',
     backgroundColor: 'white',
   },

@@ -1,22 +1,48 @@
 /* eslint-disable react-native/no-inline-styles */
-import {StyleSheet, Text, View, TextInput} from 'react-native';
-import React, {useState, useRef, useCallback} from 'react';
+import {StyleSheet, Text, View, TextInput, Image, FlatList} from 'react-native';
+import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import Switch from '../components/Switch';
 import TambahIcon from '../assets/svg/TambahIcon.svg';
 import BackIcon from '../assets/svg/BackIcon.svg';
 import DoneIcon from '../assets/svg/DoneIcon.svg';
+import {launchImageLibrary} from 'react-native-image-picker';
+import storage from '@react-native-firebase/storage';
+import Toast from 'react-native-toast-message';
+import axios from 'axios';
+
 const ProdukPage = ({route}) => {
   const navigation = useNavigation();
   const {kategori} = route.params;
   const [nama, setNama] = useState('');
   const [deskripsi, setDeskripsi] = useState('');
   const [harga, setHarga] = useState('');
+  const [foto, setFoto] = useState('');
   const [update, setUpdate] = useState(true);
+  const [menu, setMenu] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const bottomSheetRef = useRef(null);
+  useEffect(() => {
+    if (loading) {
+      setLoading(false);
+    } else {
+      console.log('AAA');
+      axios
+        .get('http://192.168.181.51:3001/menu/', {
+          params: {
+            kategori: kategori,
+          },
+        })
+        .then(res => {
+          setMenu(res.data.data);
+        });
+    }
+  }, [kategori, loading]);
 
   const renderBackdrop = useCallback(
     props => (
@@ -28,8 +54,68 @@ const ProdukPage = ({route}) => {
     ),
     [],
   );
+
+  const flatlistComponent = ({item}) => {
+    // console.log(item);
+    return (
+      <View style={styles.componentContainer}>
+        <Text style={{fontFamily: 'Inter-Regular', fontSize: 16}}>
+          {item.NamaProduk}
+        </Text>
+        <Switch
+          status={item.Status}
+          nama={item.NamaProduk}
+          kategori={kategori}
+        />
+      </View>
+    );
+  };
+  // menghandle tombol submit
+  const submitHandle = () => {
+    // jika input pada form kosong
+    if (nama === '' || deskripsi === '' || harga === '' || foto === '') {
+      Toast.show({
+        type: 'warning',
+        text1: 'Form tidak boleh kosong',
+        visibilityTime: 2000,
+      });
+    } else {
+      // memnuat ref untuk firebase cloud store ke folder images
+      const ref = storage().ref(`images/${nama}`);
+      // upload gambar ke firebase cloud store
+      const task = ref.putFile(foto.toString());
+      task.then(() => {
+        console.log('Image uploaded to the bucket!');
+        // mendapatkan url dari gambar yang telah di upload
+        storage()
+          .ref(`images/${nama}`)
+          .getDownloadURL()
+          .then(res => {
+            // mennambahkan data menu ke database
+            axios
+              .post('http://192.168.181.51:3001/menu/tambah', {
+                nama: nama,
+                kategori: kategori,
+                deskripsi: deskripsi,
+                harga: harga,
+                foto: res,
+              })
+              .then(() => {
+                setLoading(true);
+                Toast.show({
+                  type: 'sukses',
+                  text1: 'Berhasil menambah menu',
+                  visibilityTime: 2000,
+                });
+                bottomSheetRef.current.close();
+              });
+          });
+      });
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
+      {/* header */}
       <View style={styles.header}>
         <View style={{marginLeft: 5}}>
           <TouchableWithoutFeedback
@@ -49,11 +135,15 @@ const ProdukPage = ({route}) => {
           </TouchableWithoutFeedback>
         </View>
       </View>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text style={{fontFamily: 'Inter-Bold', color: 'black'}}>
-          Menu Kosong
-        </Text>
-      </View>
+      {menu.length !== 0 ? (
+        <FlatList data={menu} renderItem={flatlistComponent} />
+      ) : (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Text style={{fontFamily: 'Inter-Bold', color: 'black'}}>
+            Menu Kosong
+          </Text>
+        </View>
+      )}
       {/* BottomSheet */}
       <BottomSheet
         ref={bottomSheetRef}
@@ -66,30 +156,92 @@ const ProdukPage = ({route}) => {
           <TouchableWithoutFeedback
             style={{marginRight: 10}}
             onPress={() => {
-              console.log('ORESSSS');
+              submitHandle();
             }}>
             <DoneIcon width={30} height={30} fill={'black'} />
           </TouchableWithoutFeedback>
         </View>
-        <KeyboardAwareScrollView>
+        <KeyboardAwareScrollView
+          enableOnAndroid
+          contentContainerStyle={{paddingBottom: 40}}>
           <View style={{marginHorizontal: 10}}>
             <View style={styles.fotoContainer}>
-              <TouchableWithoutFeedback
-                style={styles.fotoButton}
-                onPress={() => {
-                  console.log('AAA');
-                }}>
-                <TambahIcon width={30} height={30} fill={'black'} />
-                <Text
-                  style={{
-                    marginTop: 10,
-                    fontFamily: 'Inter-Regular',
-                    color: 'black',
-                    fontSize: 10,
+              {foto === '' ? (
+                <TouchableWithoutFeedback
+                  style={styles.fotoButton}
+                  onPress={() => {
+                    launchImageLibrary(
+                      {
+                        storageOptions: {
+                          skipBackup: true,
+
+                          path: 'images',
+                        },
+                      },
+                      res => {
+                        console.log('Response = ', res);
+                        if (res.didCancel) {
+                          console.log('User cancelled image picker');
+                        } else if (res.error) {
+                          console.log('ImagePicker Error: ', res.error);
+                        } else if (res.customButton) {
+                          console.log(
+                            'User tapped custom button: ',
+                            res.customButton,
+                          );
+                        } else {
+                          setFoto(res.assets[0].uri);
+                        }
+                      },
+                    );
                   }}>
-                  Tambah Foto
-                </Text>
-              </TouchableWithoutFeedback>
+                  <TambahIcon width={30} height={30} fill={'black'} />
+                  <Text
+                    style={{
+                      marginTop: 10,
+                      fontFamily: 'Inter-Regular',
+                      color: 'black',
+                      fontSize: 10,
+                    }}>
+                    Tambah Foto
+                  </Text>
+                </TouchableWithoutFeedback>
+              ) : (
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    launchImageLibrary(
+                      {
+                        storageOptions: {
+                          skipBackup: true,
+
+                          path: 'images',
+                        },
+                      },
+                      res => {
+                        console.log('Response = ', res);
+                        if (res.didCancel) {
+                          console.log('User cancelled image picker');
+                        } else if (res.error) {
+                          console.log('ImagePicker Error: ', res.error);
+                        } else if (res.customButton) {
+                          console.log(
+                            'User tapped custom button: ',
+                            res.customButton,
+                          );
+                        } else {
+                          setFoto(res.assets[0].uri);
+                        }
+                      },
+                    );
+                  }}>
+                  <Image
+                    source={{
+                      uri: foto,
+                    }}
+                    style={styles.fotoButton}
+                  />
+                </TouchableWithoutFeedback>
+              )}
               <Text
                 style={{
                   marginTop: 10,
@@ -155,6 +307,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
   },
+  componentContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'grey',
+    backgroundColor: 'white',
+  },
   texHeaderStyle: {
     color: 'black',
     fontFamily: 'Inter-Bold',
@@ -181,7 +342,7 @@ const styles = StyleSheet.create({
   },
   inputStyle: {
     color: 'black',
-    height: 40,
+    height: 45,
     marginHorizontal: 10,
     paddingLeft: 15,
     borderColor: 'black',
