@@ -6,6 +6,7 @@ import {
   View,
   TextInput,
   Animated,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -22,26 +23,33 @@ import Toast from 'react-native-toast-message';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import {useNavigation} from '@react-navigation/native';
+
 const KategoriMenuPage = () => {
   const navigation = useNavigation();
   const [kategori, setKategori] = useState([]);
   const [tambah, setTambah] = useState('');
   const [update, setUpdate] = useState(true);
+  const [loading, setLoading] = useState(true);
   const bottomSheetRef = useRef(null);
   useEffect(() => {
     if (update) {
       setUpdate(false);
     } else {
-      axios
-        .get('http://192.168.181.51:3001/kategori/')
-        .then(res => {
-          setKategori(res.data.data);
-        })
-        .catch(err => {
-          console.log({err});
-        });
+      console.log('AA');
+      setTimeout(() => {
+        axios
+          .get('http://192.168.181.51:3001/kategori/')
+          .then(res => {
+            setKategori(res.data.data);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log({err});
+          });
+      }, 1000);
     }
-  }, [update]);
+  }, [setLoading, update]);
+
   // swipe component for delete
   const renderRightActions = (progress, dragX, props) => {
     const trans = dragX.interpolate({
@@ -132,15 +140,26 @@ const KategoriMenuPage = () => {
           </TouchableWithoutFeedback>
         </View>
       </View>
-      {kategori.length === 0 ? (
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <Text style={{fontFamily: 'Inter-Bold', color: 'black'}}>
-            Kategori Kosong
-          </Text>
-        </View>
-      ) : (
-        <FlatList data={kategori} renderItem={renderItem} />
-      )}
+      {
+        // jika loading maka akan menampilkan ActivityIndicator
+        loading ? (
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator size={'large'} color={'#FFA901'} />
+          </View>
+        ) : kategori.length === 0 ? (
+          // jika kategori kosong maka akan menampilkan text Kosong
+          // jika ada kategori maka menampilkan flatlist
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <Text style={{fontFamily: 'Inter-Bold', color: 'black'}}>
+              Kategori Kosong
+            </Text>
+          </View>
+        ) : (
+          <FlatList data={kategori} renderItem={renderItem} />
+        )
+      }
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
@@ -213,6 +232,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 20,
+    marginVertical: 1,
     borderBottomWidth: 0.5,
     borderBottomColor: 'grey',
     backgroundColor: 'white',

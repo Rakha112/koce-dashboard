@@ -1,7 +1,20 @@
 /* eslint-disable react-native/no-inline-styles */
-import {StyleSheet, Text, View, TextInput, Image, FlatList} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Image,
+  FlatList,
+  ActivityIndicator,
+  Animated,
+} from 'react-native';
 import React, {useState, useRef, useCallback, useEffect} from 'react';
-import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
+import {
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+} from 'react-native-gesture-handler';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
@@ -10,11 +23,11 @@ import Switch from '../components/Switch';
 import TambahIcon from '../assets/svg/TambahIcon.svg';
 import BackIcon from '../assets/svg/BackIcon.svg';
 import DoneIcon from '../assets/svg/DoneIcon.svg';
+import DeleteIcon from '../assets/svg/DeleteIcon.svg';
 import {launchImageLibrary} from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 import Toast from 'react-native-toast-message';
 import axios from 'axios';
-
 const ProdukPage = ({route}) => {
   const navigation = useNavigation();
   const {kategori} = route.params;
@@ -25,24 +38,28 @@ const ProdukPage = ({route}) => {
   const [update, setUpdate] = useState(true);
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const bottomSheetRef = useRef(null);
   useEffect(() => {
-    if (loading) {
-      setLoading(false);
+    console.log('B');
+    if (update) {
+      setUpdate(false);
     } else {
-      console.log('AAA');
-      axios
-        .get('http://192.168.181.51:3001/menu/', {
-          params: {
-            kategori: kategori,
-          },
-        })
-        .then(res => {
-          setMenu(res.data.data);
-        });
+      console.log('BB');
+      setTimeout(() => {
+        axios
+          .get('http://192.168.181.51:3001/menu/', {
+            params: {
+              kategori: kategori,
+            },
+          })
+          .then(res => {
+            console.log('BBBB');
+            setMenu(res.data.data);
+            setLoading(false);
+          });
+      }, 1000);
     }
-  }, [kategori, loading]);
+  }, [kategori, setLoading, update]);
 
   const renderBackdrop = useCallback(
     props => (
@@ -54,20 +71,68 @@ const ProdukPage = ({route}) => {
     ),
     [],
   );
-
+  const renderRightActions = (progress, dragX, props) => {
+    const trans = dragX.interpolate({
+      inputRange: [0, 50, 100, 101],
+      outputRange: [0.6, 0, 0, 1],
+    });
+    return (
+      <Animated.View
+        style={{
+          width: 50,
+          justifyContent: 'center',
+          alignItems: 'center',
+          transform: [{scale: trans}],
+        }}>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            if (kategori.length !== 0) {
+              axios
+                .delete('http://192.168.181.51:3001/kategori/delete', {
+                  params: {
+                    kategori: props,
+                  },
+                })
+                .then(() => {
+                  setUpdate(true);
+                  Toast.show({
+                    type: 'sukses',
+                    text1: 'Berhasil Menghapus Kategori',
+                    visibilityTime: 2000,
+                  });
+                })
+                .catch(() => {
+                  Toast.show({
+                    type: 'gagal',
+                    text1: 'Gagal Menghapus Kategori',
+                    visibilityTime: 2000,
+                  });
+                });
+            }
+          }}>
+          <DeleteIcon width={20} height={20} fill={'black'} />
+        </TouchableWithoutFeedback>
+      </Animated.View>
+    );
+  };
   const flatlistComponent = ({item}) => {
     // console.log(item);
     return (
-      <View style={styles.componentContainer}>
-        <Text style={{fontFamily: 'Inter-Regular', fontSize: 16}}>
-          {item.NamaProduk}
-        </Text>
-        <Switch
-          status={item.Status}
-          nama={item.NamaProduk}
-          kategori={kategori}
-        />
-      </View>
+      <Swipeable
+        renderRightActions={(progress, dragX) =>
+          renderRightActions(progress, dragX, item.NamaKategori)
+        }>
+        <TouchableOpacity style={styles.componentContainer}>
+          <Text style={{fontFamily: 'Inter-Regular', fontSize: 16}}>
+            {item.NamaProduk}
+          </Text>
+          <Switch
+            status={item.Status}
+            nama={item.NamaProduk}
+            kategori={kategori}
+          />
+        </TouchableOpacity>
+      </Swipeable>
     );
   };
   // menghandle tombol submit
@@ -101,7 +166,7 @@ const ProdukPage = ({route}) => {
                 foto: res,
               })
               .then(() => {
-                setLoading(true);
+                setUpdate(true);
                 Toast.show({
                   type: 'sukses',
                   text1: 'Berhasil menambah menu',
@@ -135,14 +200,18 @@ const ProdukPage = ({route}) => {
           </TouchableWithoutFeedback>
         </View>
       </View>
-      {menu.length !== 0 ? (
-        <FlatList data={menu} renderItem={flatlistComponent} />
-      ) : (
+      {loading ? (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator size={'large'} color={'#FFA901'} />
+        </View>
+      ) : menu.length === 0 ? (
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <Text style={{fontFamily: 'Inter-Bold', color: 'black'}}>
             Menu Kosong
           </Text>
         </View>
+      ) : (
+        <FlatList data={menu} renderItem={flatlistComponent} />
       )}
       {/* BottomSheet */}
       <BottomSheet
@@ -174,7 +243,6 @@ const ProdukPage = ({route}) => {
                       {
                         storageOptions: {
                           skipBackup: true,
-
                           path: 'images',
                         },
                       },
@@ -312,6 +380,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 20,
+    marginVertical: 1,
     borderBottomWidth: 0.5,
     borderBottomColor: 'grey',
     backgroundColor: 'white',
