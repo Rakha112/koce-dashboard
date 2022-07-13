@@ -11,7 +11,7 @@ import Animated, {
   useDerivedValue,
 } from 'react-native-reanimated';
 
-const Switch = ({status, loading, switchHandleAPI}) => {
+const Switch = ({status, loading, switchHandleAPI, disable}) => {
   // value buat animasi switch
   const switchTranslate = useSharedValue(status === 1 ? 21 : 0);
   // state buat aktifasi switch
@@ -63,7 +63,7 @@ const Switch = ({status, loading, switchHandleAPI}) => {
 
       <Animated.View style={[styles.container, backgroundColorStyle]}>
         <TouchableWithoutFeedback
-          disabled={loading ? true : false}
+          disabled={loading ? true : disable ? true : false}
           onPress={() => {
             setAktif(!aktif);
             switchHandleAPI();

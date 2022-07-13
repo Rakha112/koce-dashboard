@@ -37,6 +37,7 @@ const ProdukPage = ({route}) => {
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
   const [switchLoading, setSwitchLoading] = useState([]);
+  const [switchDisable, setSwitchDisable] = useState(false);
   const bottomSheetRef = useRef(null);
   useEffect(() => {
     console.log('B');
@@ -64,7 +65,11 @@ const ProdukPage = ({route}) => {
   }, [kategori, update]);
 
   useEffect(() => {
-    console.log({switchLoading});
+    if (switchLoading.includes(true)) {
+      setSwitchDisable(true);
+    } else {
+      setSwitchDisable(false);
+    }
   }, [switchLoading]);
 
   const renderBackdrop = useCallback(
@@ -188,6 +193,7 @@ const ProdukPage = ({route}) => {
             {item.NamaProduk}
           </Text>
           <Switch
+            disable={switchDisable}
             status={item.Status}
             loading={switchLoading[index]}
             switchHandleAPI={switchHandleAPI}
