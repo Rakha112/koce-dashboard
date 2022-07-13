@@ -10,15 +10,12 @@ import Animated, {
   withTiming,
   useDerivedValue,
 } from 'react-native-reanimated';
-import axios from 'axios';
-import Toast from 'react-native-toast-message';
 
-const Switch = ({status, nama, kategori}) => {
+const Switch = ({status, loading, switchHandleAPI}) => {
   // value buat animasi switch
   const switchTranslate = useSharedValue(status === 1 ? 21 : 0);
   // state buat aktifasi switch
   const [aktif, setAktif] = useState(status === 1 ? true : false);
-  const [loading, setLoading] = useState(false);
   // value buat animasi backgroud
   const progress = useDerivedValue(() => {
     return withTiming(aktif ? 21 : 0);
@@ -60,46 +57,6 @@ const Switch = ({status, nama, kategori}) => {
     };
   });
 
-  const switchHandle = () => {
-    setLoading(true);
-    setAktif(!aktif);
-    if (aktif) {
-      setTimeout(() => {
-        axios
-          .put('http://192.168.181.51:3001/menu/status', {
-            status: 0,
-            nama: nama,
-            kategori: kategori,
-          })
-          .then(res => {
-            setLoading(false);
-            Toast.show({
-              type: 'gagal',
-              text1: `${nama} OFF`,
-              visibilityTime: 2000,
-            });
-          });
-      }, 2000);
-    } else {
-      setTimeout(() => {
-        axios
-          .put('http://192.168.181.51:3001/menu/status', {
-            status: 1,
-            nama: nama,
-            kategori: kategori,
-          })
-          .then(res => {
-            setLoading(false);
-            Toast.show({
-              type: 'sukses',
-              text1: `${nama} ON`,
-              visibilityTime: 2000,
-            });
-          });
-      }, 2000);
-    }
-  };
-
   return (
     <View style={{flexDirection: 'row'}}>
       {loading ? <ActivityIndicator size={'small'} color={'#FFA901'} /> : <></>}
@@ -108,7 +65,8 @@ const Switch = ({status, nama, kategori}) => {
         <TouchableWithoutFeedback
           disabled={loading ? true : false}
           onPress={() => {
-            switchHandle();
+            setAktif(!aktif);
+            switchHandleAPI();
           }}>
           <Animated.View style={[styles.circle, customSpringStyles]} />
         </TouchableWithoutFeedback>

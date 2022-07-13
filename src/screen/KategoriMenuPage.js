@@ -38,7 +38,7 @@ const KategoriMenuPage = () => {
       console.log('AA');
       setTimeout(() => {
         axios
-          .get('http://192.168.181.51:3001/kategori/')
+          .get('http://192.168.5.88:3001/kategori/')
           .then(res => {
             setKategori(res.data.data);
             setLoading(false);
@@ -48,7 +48,7 @@ const KategoriMenuPage = () => {
           });
       }, 1000);
     }
-  }, [setLoading, update]);
+  }, [update]);
 
   // swipe component for delete
   const renderRightActions = (progress, dragX, props) => {
@@ -68,7 +68,7 @@ const KategoriMenuPage = () => {
           onPress={() => {
             if (kategori.length !== 0) {
               axios
-                .delete('http://192.168.181.51:3001/kategori/delete', {
+                .delete('http://192.168.5.88:3001/kategori/delete', {
                   params: {
                     kategori: props,
                   },
@@ -173,7 +173,7 @@ const KategoriMenuPage = () => {
             onPress={() => {
               if (tambah !== '') {
                 axios
-                  .post('http://192.168.181.51:3001/kategori/tambah', {
+                  .post('http://192.168.5.88:3001/kategori/tambah', {
                     kategori: tambah,
                   })
                   .then(() => {

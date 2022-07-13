@@ -10,10 +10,7 @@ import {
   Animated,
 } from 'react-native';
 import React, {useState, useRef, useCallback, useEffect} from 'react';
-import {
-  TouchableWithoutFeedback,
-  TouchableOpacity,
-} from 'react-native-gesture-handler';
+import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
@@ -28,6 +25,7 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 import Toast from 'react-native-toast-message';
 import axios from 'axios';
+
 const ProdukPage = ({route}) => {
   const navigation = useNavigation();
   const {kategori} = route.params;
@@ -38,6 +36,7 @@ const ProdukPage = ({route}) => {
   const [update, setUpdate] = useState(true);
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [switchLoading, setSwitchLoading] = useState([]);
   const bottomSheetRef = useRef(null);
   useEffect(() => {
     console.log('B');
@@ -47,7 +46,7 @@ const ProdukPage = ({route}) => {
       console.log('BB');
       setTimeout(() => {
         axios
-          .get('http://192.168.181.51:3001/menu/', {
+          .get('http://192.168.5.88:3001/menu/', {
             params: {
               kategori: kategori,
             },
@@ -56,10 +55,17 @@ const ProdukPage = ({route}) => {
             console.log('BBBB');
             setMenu(res.data.data);
             setLoading(false);
+            setSwitchLoading(
+              Array.from({length: res.data.data.length}, () => false),
+            );
           });
       }, 1000);
     }
-  }, [kategori, setLoading, update]);
+  }, [kategori, update]);
+
+  useEffect(() => {
+    console.log({switchLoading});
+  }, [switchLoading]);
 
   const renderBackdrop = useCallback(
     props => (
@@ -71,7 +77,7 @@ const ProdukPage = ({route}) => {
     ),
     [],
   );
-  const renderRightActions = (progress, dragX, props) => {
+  const renderRightActions = (progress, dragX, kategori2, menu2) => {
     const trans = dragX.interpolate({
       inputRange: [0, 50, 100, 101],
       outputRange: [0.6, 0, 0, 1],
@@ -88,9 +94,10 @@ const ProdukPage = ({route}) => {
           onPress={() => {
             if (kategori.length !== 0) {
               axios
-                .delete('http://192.168.181.51:3001/kategori/delete', {
+                .delete('http://192.168.5.88:3001/menu/delete', {
                   params: {
-                    kategori: props,
+                    kategori: kategori2,
+                    nama: menu2,
                   },
                 })
                 .then(() => {
@@ -115,23 +122,77 @@ const ProdukPage = ({route}) => {
       </Animated.View>
     );
   };
-  const flatlistComponent = ({item}) => {
+  const flatlistComponent = ({item, index}) => {
+    const switchHandleAPI = () => {
+      console.log({index});
+      const a = [...switchLoading];
+      a[index] = true;
+      setSwitchLoading(a);
+      if (item.Status === 1) {
+        setTimeout(() => {
+          axios
+            .put('http://192.168.5.88:3001/menu/status', {
+              status: 0,
+              nama: item.NamaProduk,
+              kategori: item.NamaKategori,
+            })
+            .then(res => {
+              const b = [...a];
+              b[index] = false;
+              setSwitchLoading(b);
+              Toast.show({
+                type: 'gagal',
+                text1: `${item.NamaProduk} OFF`,
+                visibilityTime: 2000,
+              });
+            });
+        }, 2000);
+      } else {
+        setTimeout(() => {
+          axios
+            .put('http://192.168.5.88:3001/menu/status', {
+              status: 1,
+              nama: item.NamaProduk,
+              kategori: item.NamaKategori,
+            })
+            .then(res => {
+              const b = [...a];
+              b[index] = false;
+              setSwitchLoading(b);
+              Toast.show({
+                type: 'sukses',
+                text1: `${item.NamaProduk} ON`,
+                visibilityTime: 2000,
+              });
+            });
+        }, 2000);
+      }
+    };
     // console.log(item);
     return (
       <Swipeable
         renderRightActions={(progress, dragX) =>
-          renderRightActions(progress, dragX, item.NamaKategori)
+          renderRightActions(
+            progress,
+            dragX,
+            item.NamaKategori,
+            item.NamaProduk,
+          )
         }>
-        <TouchableOpacity style={styles.componentContainer}>
+        <TouchableWithoutFeedback
+          style={styles.componentContainer}
+          onPress={() => {
+            navigation.navigate('Variasi', {nama: item.NamaProduk});
+          }}>
           <Text style={{fontFamily: 'Inter-Regular', fontSize: 16}}>
             {item.NamaProduk}
           </Text>
           <Switch
             status={item.Status}
-            nama={item.NamaProduk}
-            kategori={kategori}
+            loading={switchLoading[index]}
+            switchHandleAPI={switchHandleAPI}
           />
-        </TouchableOpacity>
+        </TouchableWithoutFeedback>
       </Swipeable>
     );
   };
@@ -158,7 +219,7 @@ const ProdukPage = ({route}) => {
           .then(res => {
             // mennambahkan data menu ke database
             axios
-              .post('http://192.168.181.51:3001/menu/tambah', {
+              .post('http://192.168.5.88:3001/menu/tambah', {
                 nama: nama,
                 kategori: kategori,
                 deskripsi: deskripsi,
@@ -178,6 +239,7 @@ const ProdukPage = ({route}) => {
       });
     }
   };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* header */}
