@@ -7,18 +7,17 @@ import {
   TextInput,
   Animated,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-} from 'react-native-gesture-handler';
+import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import axios from 'axios';
 import TambahIcon from '../assets/svg/TambahIcon.svg';
 import ArrowIcon from '../assets/svg/ArrowIcon.svg';
 import DoneIcon from '../assets/svg/DoneIcon.svg';
 import DeleteIcon from '../assets/svg/DeleteIcon.svg';
+import SettingIcon from '../assets/svg/SettingIcon.svg';
 import Toast from 'react-native-toast-message';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
@@ -27,26 +26,26 @@ import {useNavigation} from '@react-navigation/native';
 const KategoriMenuPage = () => {
   const navigation = useNavigation();
   const [kategori, setKategori] = useState([]);
+  const [kategoriBaru, setKategoriBaru] = useState('');
+  const [editKategori, setEditKategori] = useState('');
   const [tambah, setTambah] = useState('');
   const [update, setUpdate] = useState(true);
   const [loading, setLoading] = useState(true);
   const bottomSheetRef = useRef(null);
+  const bottomSheetEditRef = useRef(null);
   useEffect(() => {
     if (update) {
       setUpdate(false);
     } else {
-      console.log('AA');
-      setTimeout(() => {
-        axios
-          .get('http://192.168.5.88:3001/kategori/')
-          .then(res => {
-            setKategori(res.data.data);
-            setLoading(false);
-          })
-          .catch(err => {
-            console.log({err});
-          });
-      }, 1000);
+      axios
+        .get('http://192.168.161.49:3001/kategori/')
+        .then(res => {
+          setKategori(res.data.data);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.log({err});
+        });
     }
   }, [update]);
 
@@ -57,42 +56,78 @@ const KategoriMenuPage = () => {
       outputRange: [0.6, 0, 0, 1],
     });
     return (
-      <Animated.View
-        style={{
-          width: 50,
-          justifyContent: 'center',
-          alignItems: 'center',
-          transform: [{scale: trans}],
-        }}>
-        <TouchableWithoutFeedback
-          onPress={() => {
-            if (kategori.length !== 0) {
-              axios
-                .delete('http://192.168.5.88:3001/kategori/delete', {
-                  params: {
-                    kategori: props,
-                  },
-                })
-                .then(() => {
-                  setUpdate(true);
-                  Toast.show({
-                    type: 'sukses',
-                    text1: 'Berhasil Menghapus Kategori',
-                    visibilityTime: 2000,
-                  });
-                })
-                .catch(() => {
-                  Toast.show({
-                    type: 'gagal',
-                    text1: 'Gagal Menghapus Kategori',
-                    visibilityTime: 2000,
-                  });
-                });
-            }
+      <View style={{flexDirection: 'row'}}>
+        <Animated.View
+          style={{
+            width: 50,
+            justifyContent: 'center',
+            alignItems: 'center',
+            transform: [{scale: trans}],
           }}>
-          <DeleteIcon width={20} height={20} fill={'black'} />
-        </TouchableWithoutFeedback>
-      </Animated.View>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              Alert.alert(
+                `Delete Kategori ${props}`,
+                'Apakah anda yakin akan menghapus Kategori ini dan seluruh data di dalamnya ?',
+                [
+                  {
+                    text: 'Cancel',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      if (kategori.length !== 0) {
+                        axios
+                          .delete(
+                            'http://192.168.161.49:3001/kategori/delete',
+                            {
+                              params: {
+                                kategori: props,
+                              },
+                            },
+                          )
+                          .then(() => {
+                            setUpdate(true);
+                            Toast.show({
+                              type: 'sukses',
+                              text1: 'Berhasil Menghapus Kategori',
+                              visibilityTime: 2000,
+                            });
+                          })
+                          .catch(() => {
+                            Toast.show({
+                              type: 'gagal',
+                              text1: 'Gagal Menghapus Kategori',
+                              visibilityTime: 2000,
+                            });
+                          });
+                      }
+                    },
+                  },
+                ],
+              );
+            }}>
+            <DeleteIcon width={14} height={14} fill={'black'} />
+          </TouchableWithoutFeedback>
+        </Animated.View>
+        <Animated.View
+          style={{
+            width: 50,
+            justifyContent: 'center',
+            alignItems: 'center',
+            transform: [{scale: trans}],
+          }}>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setEditKategori(props);
+              bottomSheetEditRef.current.expand();
+            }}>
+            <SettingIcon width={14} height={14} fill={'black'} />
+          </TouchableWithoutFeedback>
+        </Animated.View>
+      </View>
     );
   };
   // flatlist render componenets
@@ -102,7 +137,7 @@ const KategoriMenuPage = () => {
         renderRightActions={(progress, dragX) =>
           renderRightActions(progress, dragX, item.NamaKategori)
         }>
-        <TouchableOpacity
+        <TouchableWithoutFeedback
           style={styles.componentContainer}
           onPress={() => {
             navigation.navigate('Produk', {kategori: item.NamaKategori});
@@ -111,7 +146,7 @@ const KategoriMenuPage = () => {
             {item.NamaKategori}
           </Text>
           <ArrowIcon width={14} height={14} fill={'black'} />
-        </TouchableOpacity>
+        </TouchableWithoutFeedback>
       </Swipeable>
     );
   };
@@ -173,7 +208,7 @@ const KategoriMenuPage = () => {
             onPress={() => {
               if (tambah !== '') {
                 axios
-                  .post('http://192.168.5.88:3001/kategori/tambah', {
+                  .post('http://192.168.161.49:3001/kategori/tambah', {
                     kategori: tambah,
                   })
                   .then(() => {
@@ -213,6 +248,66 @@ const KategoriMenuPage = () => {
           placeholderTextColor={'grey'}
           onChangeText={e => {
             setTambah(e);
+          }}
+        />
+      </BottomSheet>
+      {/* Bottom sheet untuk edit */}
+      <BottomSheet
+        ref={bottomSheetEditRef}
+        index={-1}
+        enablePanDownToClose
+        snapPoints={['90%', '90%']}
+        backdropComponent={renderBackdrop}>
+        <View style={styles.headerBottomSheet}>
+          <Text style={styles.texHeaderStyle}>
+            Edit Kategori {editKategori}
+          </Text>
+          <TouchableWithoutFeedback
+            style={{marginRight: 10}}
+            onPress={() => {
+              if (kategoriBaru !== '') {
+                axios
+                  .put('http://192.168.161.49:3001/kategori/edit', {
+                    kategori: editKategori,
+                    kategoriBaru: kategoriBaru,
+                  })
+                  .then(() => {
+                    Toast.show({
+                      type: 'sukses',
+                      text1: 'Berhasil Merubah Kategori',
+                      visibilityTime: 2000,
+                    });
+                    setTambah('');
+                    setUpdate(true);
+                    bottomSheetEditRef.current.close();
+                  })
+                  .catch(err => {
+                    if (err.response.status === 409) {
+                      Toast.show({
+                        type: 'gagal',
+                        text1: 'Kategori Sudah Ada',
+                        visibilityTime: 2000,
+                      });
+                    }
+                  });
+              } else {
+                Toast.show({
+                  type: 'warning',
+                  text1: 'Form tidak boleh kosong',
+                  visibilityTime: 2000,
+                });
+              }
+            }}>
+            <DoneIcon width={30} height={30} fill={'black'} />
+          </TouchableWithoutFeedback>
+        </View>
+        <TextInput
+          value={kategoriBaru}
+          style={styles.searchStyle}
+          placeholder="Masukkan Nama Kategori"
+          placeholderTextColor={'grey'}
+          onChangeText={e => {
+            setKategoriBaru(e);
           }}
         />
       </BottomSheet>
