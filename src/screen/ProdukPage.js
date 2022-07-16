@@ -36,18 +36,17 @@ const ProdukPage = ({route}) => {
   const [update, setUpdate] = useState(true);
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tambahLoading, setTambahLoading] = useState(false);
   const [switchLoading, setSwitchLoading] = useState([]);
   const [switchDisable, setSwitchDisable] = useState(false);
   const bottomSheetRef = useRef(null);
   useEffect(() => {
-    console.log('B');
     if (update) {
       setUpdate(false);
     } else {
-      console.log('BB');
       setTimeout(() => {
         axios
-          .get('http://192.168.5.88:3001/menu/', {
+          .get('http://192.168.85.58:3001/menu/', {
             params: {
               kategori: kategori,
             },
@@ -99,7 +98,7 @@ const ProdukPage = ({route}) => {
           onPress={() => {
             if (kategori.length !== 0) {
               axios
-                .delete('http://192.168.5.88:3001/menu/delete', {
+                .delete('http://192.168.85.58:3001/menu/delete', {
                   params: {
                     kategori: kategori2,
                     nama: menu2,
@@ -109,14 +108,14 @@ const ProdukPage = ({route}) => {
                   setUpdate(true);
                   Toast.show({
                     type: 'sukses',
-                    text1: 'Berhasil Menghapus Kategori',
+                    text1: 'Berhasil Menghapus Menu',
                     visibilityTime: 2000,
                   });
                 })
                 .catch(() => {
                   Toast.show({
                     type: 'gagal',
-                    text1: 'Gagal Menghapus Kategori',
+                    text1: 'Gagal Menghapus Menu',
                     visibilityTime: 2000,
                   });
                 });
@@ -129,46 +128,59 @@ const ProdukPage = ({route}) => {
   };
   const flatlistComponent = ({item, index}) => {
     const switchHandleAPI = () => {
-      console.log({index});
+      // set switch untuk loading berdasarkan indexnya
       const a = [...switchLoading];
       a[index] = true;
       setSwitchLoading(a);
+      // jika statusnya on atau aktif atau 1
       if (item.Status === 1) {
         setTimeout(() => {
+          // update status menjadi 0 atau off
           axios
-            .put('http://192.168.5.88:3001/menu/status', {
+            .put('http://192.168.85.58:3001/menu/status', {
               status: 0,
               nama: item.NamaProduk,
               kategori: item.NamaKategori,
             })
             .then(res => {
-              const b = [...a];
-              b[index] = false;
-              setSwitchLoading(b);
-              Toast.show({
-                type: 'gagal',
-                text1: `${item.NamaProduk} OFF`,
-                visibilityTime: 2000,
-              });
+              // set update menjadi true untuk mengupdate data
+              setUpdate(true);
+              if (!update) {
+                const b = [...a];
+                b[index] = false;
+                setSwitchLoading(b);
+                Toast.show({
+                  type: 'gagal',
+                  text1: `${item.NamaProduk} OFF`,
+                  visibilityTime: 2000,
+                });
+              }
             });
         }, 2000);
-      } else {
+        // jika statusnya off atau p
+      } else if (item.Status === 0) {
         setTimeout(() => {
+          // update status menjadi on atau 1
           axios
-            .put('http://192.168.5.88:3001/menu/status', {
+            .put('http://192.168.85.58:3001/menu/status', {
               status: 1,
               nama: item.NamaProduk,
               kategori: item.NamaKategori,
             })
             .then(res => {
-              const b = [...a];
-              b[index] = false;
-              setSwitchLoading(b);
-              Toast.show({
-                type: 'sukses',
-                text1: `${item.NamaProduk} ON`,
-                visibilityTime: 2000,
-              });
+              // set update menjadi true untuk mengupdate data
+              setUpdate(true);
+              // jika data sudah terupdate maka switch loading off
+              if (!update) {
+                const b = [...a];
+                b[index] = false;
+                setSwitchLoading(b);
+                Toast.show({
+                  type: 'sukses',
+                  text1: `${item.NamaProduk} ON`,
+                  visibilityTime: 2000,
+                });
+              }
             });
         }, 2000);
       }
@@ -212,7 +224,8 @@ const ProdukPage = ({route}) => {
         visibilityTime: 2000,
       });
     } else {
-      // memnuat ref untuk firebase cloud store ke folder images
+      setTambahLoading(true);
+      // membuat ref untuk firebase cloud store ke folder images
       const ref = storage().ref(`images/${nama}`);
       // upload gambar ke firebase cloud store
       const task = ref.putFile(foto.toString());
@@ -225,7 +238,7 @@ const ProdukPage = ({route}) => {
           .then(res => {
             // mennambahkan data menu ke database
             axios
-              .post('http://192.168.5.88:3001/menu/tambah', {
+              .post('http://192.168.85.58:3001/menu/tambah', {
                 nama: nama,
                 kategori: kategori,
                 deskripsi: deskripsi,
@@ -239,6 +252,7 @@ const ProdukPage = ({route}) => {
                   text1: 'Berhasil menambah menu',
                   visibilityTime: 2000,
                 });
+                setTambahLoading(false);
                 bottomSheetRef.current.close();
               });
           });
@@ -269,16 +283,19 @@ const ProdukPage = ({route}) => {
         </View>
       </View>
       {loading ? (
+        // jika loading maka akan menampilkan activityindicator atau loading
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <ActivityIndicator size={'large'} color={'#FFA901'} />
         </View>
       ) : menu.length === 0 ? (
+        // jika tidak loading maka akan menunjukka menu kosong jika menu.length = 0
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <Text style={{fontFamily: 'Inter-Bold', color: 'black'}}>
             Menu Kosong
           </Text>
         </View>
       ) : (
+        // jika tidak loading maka akan menunjukka flatlist jika menu.length lebih dari 0
         <FlatList data={menu} renderItem={flatlistComponent} />
       )}
       {/* BottomSheet */}
@@ -349,7 +366,6 @@ const ProdukPage = ({route}) => {
                       {
                         storageOptions: {
                           skipBackup: true,
-
                           path: 'images',
                         },
                       },
@@ -426,6 +442,23 @@ const ProdukPage = ({route}) => {
             />
           </View>
         </KeyboardAwareScrollView>
+        {tambahLoading ? (
+          <ActivityIndicator
+            size={'large'}
+            color={'#FFA901'}
+            style={{
+              backgroundColor: 'black',
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              opacity: 0.5,
+            }}
+          />
+        ) : (
+          <></>
+        )}
       </BottomSheet>
     </SafeAreaView>
   );
