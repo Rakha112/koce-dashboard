@@ -43,7 +43,7 @@ const VariasiPage = ({route}) => {
       setUpdate(false);
     } else {
       axios
-        .get('http://192.168.161.156:3001/variasi', {
+        .get('https://server-koce.herokuapp.com/variasi', {
           params: {
             produk: nama,
           },
@@ -101,7 +101,7 @@ const VariasiPage = ({route}) => {
             onPress={() => {
               if (nama.length !== 0) {
                 axios
-                  .delete('http://192.168.161.156:3001/variasi/delete', {
+                  .delete('https://server-koce.herokuapp.com/variasi/delete', {
                     params: {
                       variasi: variasi2,
                       produk: nama,
@@ -125,6 +125,55 @@ const VariasiPage = ({route}) => {
               }
             }}>
             <DeleteIcon width={14} height={14} fill={'black'} />
+          </TouchableWithoutFeedback>
+        </Animated.View>
+      </View>
+    );
+  };
+  // Swipe component pada Opsi
+  const renderRightActionsOpsi = (progress, dragX, variasiId, opsi2) => {
+    const trans = dragX.interpolate({
+      inputRange: [0, 50, 100, 101],
+      outputRange: [0.6, 0, 0, 1],
+    });
+    return (
+      <View style={{flexDirection: 'row'}}>
+        {/* Tombol untuk Delete Opsi */}
+        <Animated.View
+          style={{
+            width: 50,
+            justifyContent: 'center',
+            alignItems: 'center',
+            transform: [{scale: trans}],
+          }}>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              if (nama.length !== 0) {
+                axios
+                  .delete('https://server-koce.herokuapp.com/opsi/delete', {
+                    params: {
+                      opsi: opsi2,
+                      variasiId: variasiId,
+                    },
+                  })
+                  .then(() => {
+                    setUpdate(true);
+                    Toast.show({
+                      type: 'sukses',
+                      text1: 'Berhasil Menghapus Opsi',
+                      visibilityTime: 2000,
+                    });
+                  })
+                  .catch(() => {
+                    Toast.show({
+                      type: 'gagal',
+                      text1: 'Gagal Menghapus Opsi',
+                      visibilityTime: 2000,
+                    });
+                  });
+              }
+            }}>
+            <DeleteIcon width={20} height={20} fill={'black'} />
           </TouchableWithoutFeedback>
         </Animated.View>
       </View>
@@ -157,30 +206,28 @@ const VariasiPage = ({route}) => {
               // jika statusnya on atau aktif atau 1
               if (v.Status === 1) {
                 // update status menjadi 0 atau off
-                setTimeout(() => {
-                  axios
-                    .put('http://192.168.161.156:3001/opsi/status', {
-                      status: 0,
-                      variasiId: item.VariasiId,
-                      opsi: v.Opsi,
-                    })
-                    .then(res => {
-                      // set update menjadi true untuk mengupdate data
-                      setUpdate(true);
-                      if (!update) {
-                        Toast.show({
-                          type: 'gagal',
-                          text1: `${v.Opsi} OFF`,
-                          visibilityTime: 2000,
-                        });
-                      }
-                    });
-                }, 2000);
+                axios
+                  .put('https://server-koce.herokuapp.com/opsi/status', {
+                    status: 0,
+                    variasiId: item.VariasiId,
+                    opsi: v.Opsi,
+                  })
+                  .then(res => {
+                    // set update menjadi true untuk mengupdate data
+                    setUpdate(true);
+                    if (!update) {
+                      Toast.show({
+                        type: 'gagal',
+                        text1: `${v.Opsi} OFF`,
+                        visibilityTime: 2000,
+                      });
+                    }
+                  });
                 // jika statusnya off atau p
               } else if (v.Status === 0) {
                 // update status menjadi on atau 1
                 axios
-                  .put('http://192.168.161.156:3001/opsi/status', {
+                  .put('https://server-koce.herokuapp.com/opsi/status', {
                     status: 1,
                     variasiId: item.VariasiId,
                     opsi: v.Opsi,
@@ -200,26 +247,37 @@ const VariasiPage = ({route}) => {
               }
             };
             return (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  paddingHorizontal: 20,
-                  paddingVertical: 20,
-                  marginVertical: 1,
-                  backgroundColor: 'white',
-                }}
+              <Swipeable
+                renderRightActions={(progress, dragX) =>
+                  renderRightActionsOpsi(
+                    progress,
+                    dragX,
+                    item.VariasiId,
+                    v.Opsi,
+                  )
+                }
                 key={i}>
-                <View>
-                  <Text style={{fontFamily: 'Inter-Regular', fontSize: 16}}>
-                    {v.Opsi}
-                  </Text>
-                  <Text style={{fontFamily: 'Inter-Regular', fontSize: 12}}>
-                    Tambah Harga Rp. {v.Harga}
-                  </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingHorizontal: 20,
+                    paddingVertical: 20,
+                    marginVertical: 1,
+                    backgroundColor: 'white',
+                  }}>
+                  <View>
+                    <Text style={{fontFamily: 'Inter-Regular', fontSize: 16}}>
+                      {v.Opsi}
+                    </Text>
+                    <Text style={{fontFamily: 'Inter-Regular', fontSize: 12}}>
+                      Tambah Harga Rp. {v.Harga}
+                    </Text>
+                  </View>
+                  <Switch status={v.Status} switchHandleAPI={switchHandleAPI} />
                 </View>
-                <Switch status={v.Status} switchHandleAPI={switchHandleAPI} />
-              </View>
+              </Swipeable>
             );
           })
         ) : (
@@ -281,7 +339,7 @@ const VariasiPage = ({route}) => {
             onPress={() => {
               if (tambah !== '') {
                 axios
-                  .post('http://192.168.161.156:3001/variasi/tambah', {
+                  .post('https://server-koce.herokuapp.com/variasi/tambah', {
                     variasi: tambah,
                     maks: maksPilihan,
                     produk: nama,
@@ -359,7 +417,7 @@ const VariasiPage = ({route}) => {
             onPress={() => {
               if (opsi !== '' && tambahHarga !== '') {
                 axios
-                  .post('http://192.168.161.156:3001/opsi/tambah', {
+                  .post('https://server-koce.herokuapp.com/opsi/tambah', {
                     opsi: opsi,
                     variasiId: currentVariasiId,
                     tambahHarga: tambahHarga,
