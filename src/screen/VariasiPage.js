@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   FlatList,
   TextInput,
+  Animated,
 } from 'react-native';
 import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -14,9 +15,12 @@ import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 import TambahIcon from '../assets/svg/TambahIcon.svg';
 import BackIcon from '../assets/svg/BackIcon.svg';
 import DoneIcon from '../assets/svg/DoneIcon.svg';
+import DeleteIcon from '../assets/svg/DeleteIcon.svg';
+
 const VariasiPage = ({route}) => {
   const navigation = useNavigation();
   const {nama} = route.params;
@@ -32,13 +36,13 @@ const VariasiPage = ({route}) => {
       setUpdate(false);
     } else {
       axios
-        .get('http://192.168.161.202:3001/variasi', {
+        .get('http://192.168.161.162:3001/variasi', {
           params: {
             produk: nama,
           },
         })
         .then(res => {
-          console.log(res.data.data);
+          // console.log(JSON.parse(res.data.data[0].OpsiVariasi));
           setVariasi(res.data.data);
           setLoading(false);
         });
@@ -54,19 +58,68 @@ const VariasiPage = ({route}) => {
     ),
     [],
   );
-  const flatlistComponent = ({item, index}) => {
+  const renderRightActions = (progress, dragX, variasi2) => {
+    const trans = dragX.interpolate({
+      inputRange: [0, 50, 100, 101],
+      outputRange: [0.6, 0, 0, 1],
+    });
     return (
-      <View>
+      <Animated.View
+        style={{
+          width: 50,
+          justifyContent: 'center',
+          alignItems: 'center',
+          transform: [{scale: trans}],
+        }}>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            if (nama.length !== 0) {
+              axios
+                .delete('http://192.168.161.162:3001/variasi/delete', {
+                  params: {
+                    variasi: variasi2,
+                    produk: nama,
+                  },
+                })
+                .then(() => {
+                  setUpdate(true);
+                  Toast.show({
+                    type: 'sukses',
+                    text1: 'Berhasil Menghapus Variasi',
+                    visibilityTime: 2000,
+                  });
+                })
+                .catch(() => {
+                  Toast.show({
+                    type: 'gagal',
+                    text1: 'Gagal Menghapus Variasi',
+                    visibilityTime: 2000,
+                  });
+                });
+            }
+          }}>
+          <DeleteIcon width={20} height={20} fill={'black'} />
+        </TouchableWithoutFeedback>
+      </Animated.View>
+    );
+  };
+  const flatlistComponent = ({item, index}) => {
+    // console.log(JSON.parse(item.OpsiVariasi));
+    return (
+      <Swipeable
+        renderRightActions={(progress, dragX) =>
+          renderRightActions(progress, dragX, item.NamaVariasi)
+        }>
         <TouchableWithoutFeedback
           style={styles.componentContainer}
           onPress={() => {
-            navigation.navigate('Variasi', {nama: item.NamaProduk});
+            console.log('PRESS');
           }}>
           <Text style={{fontFamily: 'Inter-Regular', fontSize: 16}}>
-            {item.NamaVariasi}, ( Maks. Pilihan {item.MaxPilihan} )
+            {item.NamaVariasi} ( Maks. Pilihan {item.MaxPilihan} )
           </Text>
         </TouchableWithoutFeedback>
-      </View>
+      </Swipeable>
     );
   };
   return (
@@ -118,10 +171,10 @@ const VariasiPage = ({route}) => {
           <TouchableWithoutFeedback
             style={{marginRight: 10}}
             onPress={() => {
-              console.log('press');
+              console.log(maksPilihan);
               if (tambah !== '') {
                 axios
-                  .post('http://192.168.161.202:3001/variasi/tambah', {
+                  .post('http://192.168.161.162:3001/variasi/tambah', {
                     variasi: tambah,
                     maks: maksPilihan,
                     produk: nama,
