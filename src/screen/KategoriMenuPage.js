@@ -38,7 +38,7 @@ const KategoriMenuPage = () => {
       setUpdate(false);
     } else {
       axios
-        .get('http://192.168.161.49:3001/kategori/')
+        .get('https://server-koce.herokuapp.com/kategori/')
         .then(res => {
           setKategori(res.data.data);
           setLoading(false);
@@ -66,6 +66,21 @@ const KategoriMenuPage = () => {
           }}>
           <TouchableWithoutFeedback
             onPress={() => {
+              setEditKategori(props);
+              bottomSheetEditRef.current.expand();
+            }}>
+            <SettingIcon width={14} height={14} fill={'black'} />
+          </TouchableWithoutFeedback>
+        </Animated.View>
+        <Animated.View
+          style={{
+            width: 50,
+            justifyContent: 'center',
+            alignItems: 'center',
+            transform: [{scale: trans}],
+          }}>
+          <TouchableWithoutFeedback
+            onPress={() => {
               Alert.alert(
                 `Delete Kategori ${props}`,
                 'Apakah anda yakin akan menghapus Kategori ini dan seluruh data di dalamnya ?',
@@ -81,7 +96,7 @@ const KategoriMenuPage = () => {
                       if (kategori.length !== 0) {
                         axios
                           .delete(
-                            'http://192.168.161.49:3001/kategori/delete',
+                            'https://server-koce.herokuapp.com/kategori/delete',
                             {
                               params: {
                                 kategori: props,
@@ -110,21 +125,6 @@ const KategoriMenuPage = () => {
               );
             }}>
             <DeleteIcon width={14} height={14} fill={'black'} />
-          </TouchableWithoutFeedback>
-        </Animated.View>
-        <Animated.View
-          style={{
-            width: 50,
-            justifyContent: 'center',
-            alignItems: 'center',
-            transform: [{scale: trans}],
-          }}>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setEditKategori(props);
-              bottomSheetEditRef.current.expand();
-            }}>
-            <SettingIcon width={14} height={14} fill={'black'} />
           </TouchableWithoutFeedback>
         </Animated.View>
       </View>
@@ -208,7 +208,7 @@ const KategoriMenuPage = () => {
             onPress={() => {
               if (tambah !== '') {
                 axios
-                  .post('http://192.168.161.49:3001/kategori/tambah', {
+                  .post('https://server-koce.herokuapp.com/kategori/tambah', {
                     kategori: tambah,
                   })
                   .then(() => {
@@ -267,7 +267,7 @@ const KategoriMenuPage = () => {
             onPress={() => {
               if (kategoriBaru !== '') {
                 axios
-                  .put('http://192.168.161.49:3001/kategori/edit', {
+                  .put('https://server-koce.herokuapp.com/kategori/edit', {
                     kategori: editKategori,
                     kategoriBaru: kategoriBaru,
                   })

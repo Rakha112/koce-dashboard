@@ -1,10 +1,65 @@
-import {StyleSheet, Text} from 'react-native';
-import React from 'react';
+/* eslint-disable react-native/no-inline-styles */
+import {
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+  ScrollView,
+  RefreshControl,
+  View,
+} from 'react-native';
+import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import axios from 'axios';
+import OrderComp from '../components/OrderComp';
 const OrderSekarang = () => {
+  const [data, setData] = useState();
+  const [refreshing, setRefrehsing] = useState(false);
+  useEffect(() => {
+    axios
+      .get('https://server-koce.herokuapp.com/checkout/data')
+      .then(res => {
+        setData(res.data.data);
+      })
+      .catch(err => {
+        console.log(err.response);
+      });
+  }, []);
+  const handleRefresh = () => {
+    setRefrehsing(true);
+    axios
+      .get('https://server-koce.herokuapp.com/checkout/data')
+      .then(res => {
+        setData(res.data.data);
+        setRefrehsing(false);
+      })
+      .catch(err => {
+        console.log(err.response);
+        setRefrehsing(false);
+      });
+  };
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={{color: 'black'}}>OrderSekarang</Text>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{flexGrow: 1}}
+        refreshControl={
+          <RefreshControl
+            onRefresh={() => handleRefresh()}
+            refreshing={refreshing}
+            colors={['#FFA901']}
+            tintColor={'#FFA901'}
+          />
+        }>
+        {data === undefined ? (
+          <ActivityIndicator size={'large'} color={'#FFA901'} />
+        ) : data.length > 0 ? (
+          <OrderComp data={data} />
+        ) : (
+          <View style={styles.kosongContainer}>
+            <Text style={styles.text}>Belum Ada Order</Text>
+          </View>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -15,7 +70,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
+  },
+  kosongContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+  text: {
+    fontFamily: 'Inter-Regular',
+    color: 'black',
+    fontSize: 20,
   },
 });

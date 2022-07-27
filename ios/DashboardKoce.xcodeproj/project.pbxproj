@@ -17,7 +17,7 @@
 		A393445E97834458BD23ED9E /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8775CEBC2A224CECAD48A553 /* Inter-SemiBold.ttf */; };
 		A8F0A5F8CCD24AE0ABCE3BA3 /* Inter-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 545A3B2193B041448F9117AD /* Inter-Medium.ttf */; };
 		AAB9AAED3EC248389320A2D3 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A5351758FB434B3D8FE90335 /* Inter-Regular.ttf */; };
-		BAC4391E287C0F2D001BCC11 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BAC4391D287C0F2D001BCC11 /* GoogleService-Info.plist */; };
+		BAD670B3287FD0C50069B594 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BAD670B2287FD0C50069B594 /* GoogleService-Info.plist */; };
 		CF475FE6459102080B367F5D /* Pods_DashboardKoce.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 146701D01832792F1EB307CF /* Pods_DashboardKoce.framework */; };
 /* End PBXBuildFile section */
 
@@ -52,7 +52,7 @@
 		89C6BE57DB24E9ADA2F236DE /* Pods-DashboardKoce-DashboardKoceTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashboardKoce-DashboardKoceTests.release.xcconfig"; path = "Target Support Files/Pods-DashboardKoce-DashboardKoceTests/Pods-DashboardKoce-DashboardKoceTests.release.xcconfig"; sourceTree = "<group>"; };
 		A5351758FB434B3D8FE90335 /* Inter-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Regular.ttf"; path = "../src/assets/fonts/Inter-Regular.ttf"; sourceTree = "<group>"; };
 		B5262703D1E8B6ED1E1B7A86 /* Pods_DashboardKoce_DashboardKoceTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DashboardKoce_DashboardKoceTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		BAC4391D287C0F2D001BCC11 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		BAD670B2287FD0C50069B594 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -137,7 +137,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				BAC4391D287C0F2D001BCC11 /* GoogleService-Info.plist */,
+				BAD670B2287FD0C50069B594 /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* DashboardKoce */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* DashboardKoceTests */,
@@ -270,7 +270,7 @@
 				A8F0A5F8CCD24AE0ABCE3BA3 /* Inter-Medium.ttf in Resources */,
 				AAB9AAED3EC248389320A2D3 /* Inter-Regular.ttf in Resources */,
 				A393445E97834458BD23ED9E /* Inter-SemiBold.ttf in Resources */,
-				BAC4391E287C0F2D001BCC11 /* GoogleService-Info.plist in Resources */,
+				BAD670B3287FD0C50069B594 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

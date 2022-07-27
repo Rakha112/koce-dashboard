@@ -44,22 +44,19 @@ const ProdukPage = ({route}) => {
     if (update) {
       setUpdate(false);
     } else {
-      setTimeout(() => {
-        axios
-          .get('http://192.168.85.58:3001/menu/', {
-            params: {
-              kategori: kategori,
-            },
-          })
-          .then(res => {
-            console.log('BBBB');
-            setMenu(res.data.data);
-            setLoading(false);
-            setSwitchLoading(
-              Array.from({length: res.data.data.length}, () => false),
-            );
-          });
-      }, 1000);
+      axios
+        .get('https://server-koce.herokuapp.com/menu/', {
+          params: {
+            kategori: kategori,
+          },
+        })
+        .then(res => {
+          setMenu(res.data.data);
+          setLoading(false);
+          setSwitchLoading(
+            Array.from({length: res.data.data.length}, () => false),
+          );
+        });
     }
   }, [kategori, update]);
 
@@ -98,7 +95,7 @@ const ProdukPage = ({route}) => {
           onPress={() => {
             if (kategori.length !== 0) {
               axios
-                .delete('http://192.168.85.58:3001/menu/delete', {
+                .delete('https://server-koce.herokuapp.com/menu/delete', {
                   params: {
                     kategori: kategori2,
                     nama: menu2,
@@ -134,58 +131,54 @@ const ProdukPage = ({route}) => {
       setSwitchLoading(a);
       // jika statusnya on atau aktif atau 1
       if (item.Status === 1) {
-        setTimeout(() => {
-          // update status menjadi 0 atau off
-          axios
-            .put('http://192.168.85.58:3001/menu/status', {
-              status: 0,
-              nama: item.NamaProduk,
-              kategori: item.NamaKategori,
-            })
-            .then(res => {
-              // set update menjadi true untuk mengupdate data
-              setUpdate(true);
-              if (!update) {
-                const b = [...a];
-                b[index] = false;
-                setSwitchLoading(b);
-                Toast.show({
-                  type: 'gagal',
-                  text1: `${item.NamaProduk} OFF`,
-                  visibilityTime: 2000,
-                });
-              }
-            });
-        }, 2000);
+        // update status menjadi 0 atau off
+        axios
+          .put('https://server-koce.herokuapp.com/menu/status', {
+            status: 0,
+            nama: item.NamaProduk,
+            kategori: item.NamaKategori,
+          })
+          .then(res => {
+            // set update menjadi true untuk mengupdate data
+            setUpdate(true);
+            if (!update) {
+              const b = [...a];
+              b[index] = false;
+              setSwitchLoading(b);
+              Toast.show({
+                type: 'gagal',
+                text1: `${item.NamaProduk} OFF`,
+                visibilityTime: 2000,
+              });
+            }
+          });
+
         // jika statusnya off atau p
       } else if (item.Status === 0) {
-        setTimeout(() => {
-          // update status menjadi on atau 1
-          axios
-            .put('http://192.168.85.58:3001/menu/status', {
-              status: 1,
-              nama: item.NamaProduk,
-              kategori: item.NamaKategori,
-            })
-            .then(res => {
-              // set update menjadi true untuk mengupdate data
-              setUpdate(true);
-              // jika data sudah terupdate maka switch loading off
-              if (!update) {
-                const b = [...a];
-                b[index] = false;
-                setSwitchLoading(b);
-                Toast.show({
-                  type: 'sukses',
-                  text1: `${item.NamaProduk} ON`,
-                  visibilityTime: 2000,
-                });
-              }
-            });
-        }, 2000);
+        // update status menjadi on atau 1
+        axios
+          .put('https://server-koce.herokuapp.com/menu/status', {
+            status: 1,
+            nama: item.NamaProduk,
+            kategori: item.NamaKategori,
+          })
+          .then(res => {
+            // set update menjadi true untuk mengupdate data
+            setUpdate(true);
+            // jika data sudah terupdate maka switch loading off
+            if (!update) {
+              const b = [...a];
+              b[index] = false;
+              setSwitchLoading(b);
+              Toast.show({
+                type: 'sukses',
+                text1: `${item.NamaProduk} ON`,
+                visibilityTime: 2000,
+              });
+            }
+          });
       }
     };
-    // console.log(item);
     return (
       <Swipeable
         renderRightActions={(progress, dragX) =>
@@ -238,7 +231,7 @@ const ProdukPage = ({route}) => {
           .then(res => {
             // mennambahkan data menu ke database
             axios
-              .post('http://192.168.85.58:3001/menu/tambah', {
+              .post('https://server-koce.herokuapp.com/menu/tambah', {
                 nama: nama,
                 kategori: kategori,
                 deskripsi: deskripsi,
