@@ -1,15 +1,27 @@
 import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
-
+import ArrowIcon from '../assets/svg/ArrowIcon.svg';
+import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 const OrderComp = ({data}) => {
   return (
-    <View>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        console.log('PRESSS');
+      }}>
       {/* Mapping Data dari API */}
       {data.map((value, index) => {
         return (
           <View style={styles.container} key={index}>
             <View style={styles.innerContainer}>
-              <Text style={styles.textNama}>{value.NamaUser}</Text>
+              <View style={styles.pembeliContainer}>
+                <View style={styles.idOrderContainer}>
+                  <Text style={styles.idOrder}>#{value.Checkout_id}</Text>
+                </View>
+                <Text style={styles.textNama}>{value.NamaUser}</Text>
+                <View style={styles.arrowContainer}>
+                  <ArrowIcon width={14} height={14} fill={'black'} />
+                </View>
+              </View>
               {/* Mapping Menu dari data */}
               {JSON.parse(value.Menu).map((val, ind) => {
                 return (
@@ -34,7 +46,7 @@ const OrderComp = ({data}) => {
           </View>
         );
       })}
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -45,17 +57,43 @@ const styles = StyleSheet.create({
   innerContainer: {paddingHorizontal: 20},
   textNama: {
     fontFamily: 'Inter-Bold',
-    paddingVertical: 10,
     color: 'black',
+    fontSize: 16,
+    textAlign: 'center',
+    flex: 1,
   },
   menuContainer: {
     borderWidth: 0.8,
     borderColor: 'grey',
     borderRadius: 10,
     padding: 10,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   namaMenuContainer: {flexDirection: 'row', marginBottom: 10},
   text: {fontFamily: 'Inter-Regular', color: 'black'},
   varianContainer: {paddingLeft: 10},
+  pembeliContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    marginVertical: 10,
+    borderWidth: 0.8,
+    borderColor: 'grey',
+    borderRadius: 10,
+  },
+  idOrderContainer: {
+    backgroundColor: '#FFA901',
+    width: 50,
+    height: 50,
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  idOrder: {
+    fontFamily: 'Inter-Bold',
+    color: 'white',
+    fontSize: 20,
+  },
+  arrowContainer: {marginRight: 10},
 });
