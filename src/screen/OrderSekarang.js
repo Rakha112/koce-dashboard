@@ -11,9 +11,26 @@ import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import axios from 'axios';
 import OrderComp from '../components/OrderComp';
+import {io} from 'socket.io-client';
 const OrderSekarang = () => {
   const [data, setData] = useState();
   const [refreshing, setRefrehsing] = useState(false);
+  useEffect(() => {
+    const socket = io('https://server-koce.herokuapp.com', {
+      transports: ['websocket'],
+    });
+    socket.on('checkout', () => {
+      axios
+        .get('https://server-koce.herokuapp.com/checkout/data')
+        .then(res => {
+          setData(res.data.data);
+        })
+        .catch(err => {
+          console.log(err.response);
+        });
+    });
+  }, []);
+
   useEffect(() => {
     axios
       .get('https://server-koce.herokuapp.com/checkout/data')
