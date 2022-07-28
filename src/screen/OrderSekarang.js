@@ -54,6 +54,7 @@ const OrderSekarang = () => {
         setRefrehsing(false);
       });
   };
+
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <ScrollView

@@ -10,6 +10,7 @@ import ProdukPage from './src/screen/ProdukPage';
 import {Provider} from 'react-redux';
 import {configureStore} from '@reduxjs/toolkit';
 import VariasiPage from './src/screen/VariasiPage';
+import DetailedOrderPage from './src/screen/DetailedOrderPage';
 const App = () => {
   const Stack = createStackNavigator();
 
@@ -48,6 +49,7 @@ const App = () => {
             <Stack.Screen name="Home" component={BottomTabNavigation} />
             <Stack.Screen name="Produk" component={ProdukPage} />
             <Stack.Screen name="Variasi" component={VariasiPage} />
+            <Stack.Screen name="Detail" component={DetailedOrderPage} />
           </Stack.Navigator>
         </NavigationContainer>
         <ToastComponent />
